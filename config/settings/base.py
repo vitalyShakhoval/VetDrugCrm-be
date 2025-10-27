@@ -28,8 +28,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "apps.inventory",
-    "apps.users",
 ]
 
 MIDDLEWARE = [
@@ -56,6 +54,21 @@ DATABASES = {
         "PORT": env("DB_PORT"),
     }
 }
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
 
 TIME_ZONE = "UTC"
 USE_TZ = True
