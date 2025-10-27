@@ -1,0 +1,21 @@
+name: Check branch naming
+on:
+  push:
+    branches-ignore:
+      - main
+      - develop
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch name
+        if: startsWith(github.ref, 'refs/heads/')
+        run: |
+          BRANCH=${GITHUB_REF#refs/heads/}
+          echo "Checking branch name: $BRANCH"
+          if [[ ! "$BRANCH" =~ ^(feature|bugfix|hotfix)\/[a-z0-9._-]+$ ]]; then
+            echo "❌ Invalid branch name!"
+            echo "Use one of: feature/, bugfix/, hotfix/"
+            exit 1
+          fi
+          echo "✅ Branch name is valid"
