@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+PATTERN='^(feature|bugfix|hotfix)\/[a-z0-9._-]+$'
+
+if [[ ! "$BRANCH" =~ $PATTERN ]]; then
+  echo "❌ Invalid branch name: '$BRANCH'"
+  echo "Allowed patterns:"
+  echo "  feature/<task-name>"
+  echo "  bugfix/<task-name>"
+  echo "  hotfix/<task-name>"
+  echo "Example: feature/VDC-123"
+  exit 1
+fi
+
+echo "✅ Branch name '$BRANCH' OK"
