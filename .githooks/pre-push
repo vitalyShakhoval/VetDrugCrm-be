@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-PATTERN='^(feature|bugfix|hotfix)\/[a-z0-9._-]+$'
+PATTERN='^(feature|bugfix|hotfix|main)\/[a-z0-9._-]+$'
 
 if [[ ! "$BRANCH" =~ $PATTERN ]]; then
   echo "❌ Invalid branch name: '$BRANCH'"
