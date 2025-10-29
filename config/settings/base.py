@@ -1,19 +1,21 @@
+# config/settings/base.py
 import os
 from pathlib import Path
-
 import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
 env = environ.Env(
-    DEBUG=(bool, False),
-    SECRET_KEY=(str, "change-me"),
+    DEBUG=(bool, True),
+    SECRET_KEY=(str, "dev-secret"),
     ALLOWED_HOSTS=(list, ["*"]),
-    DB_NAME=(str, "app"),
-    DB_USER=(str, "app"),
-    DB_PASSWORD=(str, "app"),
-    DB_HOST=(str, "db"),
+    DB_NAME=(str, "postgres"),
+    DB_USER=(str, "postgres"),
+    DB_PASSWORD=(str, "postgres"),
+    DB_HOST=(str, "localhost"),
     DB_PORT=(int, 5432),
 )
+
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = env("SECRET_KEY")
@@ -58,10 +60,11 @@ DATABASES = {
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
