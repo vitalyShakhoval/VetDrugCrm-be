@@ -18,8 +18,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from users import views
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("employee_list/",views.employee_list, name = "employee_list"),
-    path("")
+    #path("")
 ]
