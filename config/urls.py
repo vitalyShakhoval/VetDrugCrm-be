@@ -17,7 +17,15 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from users.views import signup_view, login_view, HelloView
+from rest_framework.authtoken.views import obtain_auth_token
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("signup_view/", signup_view, name = 'signup'),
+    path("login_view/", login_view, name = 'login'),
+    path('hello/',HelloView.as_view(), name= 'hello'),#нужна для обкатки postman
+    path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
+
 ]
