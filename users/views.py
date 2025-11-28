@@ -29,7 +29,7 @@ def login_view(request):
     return render(request, 'login.html', {'form': form})
 
 
-class HelloView(APIView):               #для обкатки postman
+class HelloView(APIView):                       #для обкатки postman
     permission_classes = (IsAuthenticated,)             
 
     def get(self, request):
