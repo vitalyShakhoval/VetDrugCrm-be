@@ -39,3 +39,13 @@ class EmployeProfile(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+
+    def is_manager(self):
+        return self.role == 'manager'
+    
+    def is_warehouse_supervisor(self):
+        return self.role == 'warehouse_supervisor'
+    
+    def is_veterinarian(self):
+        return self.role == 'veterinarian'
