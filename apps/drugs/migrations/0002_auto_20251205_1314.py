@@ -1,7 +1,7 @@
 from django.db import migrations
 
 def create_initial_drugs(apps, schema_editor):
-    Drug = apps.get_model("directory", "Drug")
+    Drug = apps.get_model("drugs", "Drug")
     Drug.objects.create(
         name="Амоксициллин",
         dosage_form="Таблетки",
@@ -16,14 +16,14 @@ def create_initial_drugs(apps, schema_editor):
     )
 
 def delete_initial_drugs(apps, schema_editor):
-    Drug = apps.get_model("directory", "Drug")
+    Drug = apps.get_model("drugs", "Drug")
     Drug.objects.filter(code__in=["AMX001", "IOD003"]).delete()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("directory", "0001_initial"),
+        ("drugs", "0001_initial"),
     ]
 
     operations = [

@@ -31,7 +31,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "django_extensions",
-    "apps.directory.apps.DirectoryConfig",
+    "django_rename_app",
+    "apps.drugs.apps.DrugsConfig",
 ]
 
 MIDDLEWARE = [
