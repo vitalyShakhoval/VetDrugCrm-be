@@ -4,13 +4,13 @@ from rest_framework import generics, status, viewsets
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
 from .serializers import UserSerializer
-from .models import EmployeProfile
-from .mixins import RoleRequiredMixin, PermissionRequiredMixin
+from .models import EmployeeProfile
+from .permissions import RoleRequiredMixin, PermissionRequiredMixin
 from .roles import *
 
 class RegisterView(generics.CreateAPIView):
   
-    queryset = EmployeProfile.objects.all()
+    queryset = EmployeeProfile.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = UserSerializer
 

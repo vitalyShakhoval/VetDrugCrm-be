@@ -18,7 +18,7 @@ class Warehouseman(AbstractUserRole):
         
         }
     
-ALL_ROLES = {
+REGISTERED_ROLES = {
     'manager': Manager,
     'veterinarian': Veterinarian,
     'warehouseman': Warehouseman,
@@ -32,4 +32,4 @@ def get_role_choices():
     ]
 
 def get_role_class(role_code):
-    return ALL_ROLES.get(role_code)
+    return REGISTERED_ROLES.get(role_code)

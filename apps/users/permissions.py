@@ -1,4 +1,4 @@
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied,AuthenticationFailed
 from rolepermissions.checkers import has_role, has_permission
 
 class RoleRequiredMixin:
@@ -9,6 +9,9 @@ class RoleRequiredMixin:
         
         if not self.required_role_class:
             raise ValueError("required_role_class должен быть задан")
+        
+        if not request.user or not request.user.is_authenticated:
+            raise AuthenticationFailed("Пользователь не аутентифицирован")
         
         if not has_role(request.user, self.required_role_class):
             raise PermissionDenied(
@@ -23,8 +26,11 @@ class PermissionRequiredMixin:
         
         if not self.required_permission:
             raise ValueError("required_permission должен быть задан")
-
+        
+        if not request.user or not request.user.is_authenticated:
+            raise AuthenticationFailed("Пользователь не аутентифицирован")
+        
         if not has_permission(request.user, self.required_permission):
             raise PermissionDenied(
-                f"Доступ запрещен. Требуется право: {self.required_permission}"
+                f"Доступ запрещен. Требуется право: {self.required_permission.__name__}"
             )
