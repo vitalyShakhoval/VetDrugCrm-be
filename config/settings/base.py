@@ -30,12 +30,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
     'rest_framework_simplejwt',
     "rest_framework",
-
-    'rest_framework.authtoken', # удалить
-    
+    'rolepermissions',
+    #apps
     'apps.users',
 ]
 
@@ -92,8 +90,9 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
      
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        #'rest_framework.authentication.TokenAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',],
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        
+        ],
     
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -132,5 +131,12 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+AUTHENTICATION_BACKENDS = [
+    'apps.users.backends.JWTAuthBackend',
+    'django.contrib.auth.backends.ModelBackend', 
+]
+
 
 AUTH_USER_MODEL = "users.EmployeProfile"
+ROLEPERMISSIONS_MODULE = "apps.users.roles"
+ROLEPERMISSIONS_REDIRECT_TO_LOGIN = False

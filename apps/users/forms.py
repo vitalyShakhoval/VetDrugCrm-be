@@ -3,7 +3,7 @@ from .models import EmployeProfile
 from django import forms
 
 class SignUpForm(UserCreationForm):
-    email = forms.EmailField(max_length=254, help_text='Введите email.')
+    email = forms.EmailField(max_length=254, help_text='Введите email')
 
     class Meta:
         model = EmployeProfile

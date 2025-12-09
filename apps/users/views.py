@@ -1,11 +1,12 @@
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated , AllowAny
-from rest_framework import generics, status 
+from rest_framework import generics, status, viewsets
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.views import APIView
 from .serializers import UserSerializer
 from .models import EmployeProfile
-from rest_framework.views import APIView
-from .premissions import IsManager,IsVeterinarian,IsWarehouseSupervisor
-
+from .mixins import RoleRequiredMixin, PermissionRequiredMixin
+from .roles import *
 
 class RegisterView(generics.CreateAPIView):
   
@@ -22,58 +23,23 @@ class RegisterView(generics.CreateAPIView):
         return Response({
             "message": "Регистрация пользователя прошла успешно",
             "user_id": user.id,
-            "email": user.email
+            "email": user.email,
+            'role': user.role
         }, status=status.HTTP_201_CREATED, headers=headers) 
+    
 
-
-class ManagerDashboardView(APIView):
-    permission_classes = [IsAuthenticated, IsManager]
+class ProtectedView(RoleRequiredMixin,APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    required_role_class = Manager
     
     def get(self, request):
+        user = request.user
         return Response({
-            "message": "Панель менеджера",
-            "user": request.user.email,
-            "role": request.user.role,
-            "available_actions": [
-                "Главная (дашборд)",
-                "Управление пользователями", 
-                "Настройки уведомлений",
-                "Журнал действий",
-                "Отчёты",
-            ]
+            "message": "This is a protected endpoint by manager",
+            "user_id": user.id,
+            "username": user.email,
+            "is_authenticated": user.is_authenticated,
+            'role': user.role,
+            'data': 'Ваши защищенные данные здесь'
         })
-
-
-class WarehouseDashboardView(APIView):
-    permission_classes = [IsAuthenticated, IsWarehouseSupervisor]
-    
-    def get(self, request):
-        return Response({
-            "message": "Управление складом",
-            "user": request.user.email,
-            "role": request.user.role,
-            "available_actions": [
-                "Каталог препаратов",
-                "Партии (приёмка)",
-                "Инвентаризация"
-            ]
-        })
-
-
-class VeterinarianDashboardView(APIView):
-    permission_classes = [IsAuthenticated, IsVeterinarian]
-    
-    def get(self, request):
-        return Response({
-            "message": "Панель ветеринара", 
-            "user": request.user.email,
-            "role": request.user.role,
-            "available_actions": [
-                "Выдача препарата",
-                "Возврат",
-                "История операций"
-            ]
-        })
-    
-
-    

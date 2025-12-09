@@ -1,5 +1,8 @@
-from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from .roles import get_role_choices,get_role_class
+from rolepermissions.roles import assign_role
+from .roles import get_role_class
 
 class EmployeProfileManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -9,43 +12,32 @@ class EmployeProfileManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
+        role_code = extra_fields.get('role', 'veterinarian')
+        role_class = get_role_class(role_code)
+        if role_class:
+            assign_role(user, role_class)
         return user
    
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', 'manager')
         return self.create_user(email, password, **extra_fields)
-
 
 class EmployeProfile(AbstractUser):
     username = None
-    USER_ROLES = [
-        ('manager', 'Менеджер'),
-        ('warehouse_supervisor', 'Заведующий складом'),
-        ('veterinarian', 'Ветеринар'),
-    ]
+    email = models.EmailField(unique=True, blank=False)
     role = models.CharField(
         max_length=50,
-        choices=USER_ROLES,
+        choices=get_role_choices(),
         default='veterinarian'
     )
-    email = models.EmailField(unique=True, blank=False)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
-    
     objects = EmployeProfileManager()
-
+    
+    def get_role_class(self):
+        return get_role_class(self.role)
+    
     def __str__(self):
         return self.email
-    
-
-    def is_manager(self):
-        return self.role == 'manager'
-    
-    def is_warehouse_supervisor(self):
-        return self.role == 'warehouse_supervisor'
-    
-    def is_veterinarian(self):
-        return self.role == 'veterinarian'

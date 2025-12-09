@@ -20,21 +20,16 @@ from apps.users import views
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
-    TokenVerifyView,
 )
 
 app_name = 'users'
 
 urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='auth_register'),
-    
+        
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-
-    path('dashboard/manager/', views.ManagerDashboardView.as_view(), name='manager_dashboard'),
-    path('dashboard/warehouse/', views.WarehouseDashboardView.as_view(), name='warehouse_dashboard'),
-    path('dashboard/veterinarian/', views.VeterinarianDashboardView.as_view(), name='veterinarian_dashboard'),
     
-]
+    path('protected/', views.ProtectedView.as_view(), name='protected_resource')
 
+]
