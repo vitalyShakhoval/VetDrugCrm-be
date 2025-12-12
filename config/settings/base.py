@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_rename_app",
     "apps.drugs.apps.DrugsConfig",
+    "apps.batches.apps.BatchesConfig",
 ]
 
 MIDDLEWARE = [
