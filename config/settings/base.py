@@ -30,11 +30,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
+    "django_rename_app",
+
     'rest_framework_simplejwt',
     "rest_framework",
     'rolepermissions',
     #apps
     'apps.users',
+    "apps.drugs.apps.DrugsConfig",
+    "apps.batches.apps.BatchesConfig",
 ]
 
 MIDDLEWARE = [
