@@ -24,26 +24,17 @@ DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS")
 
 INSTALLED_APPS = [
-    #base Django app
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    
-    #download django app
     'rest_framework_simplejwt',
     "rest_framework",
-    "django_extensions",
-    "django_rename_app",
     'rolepermissions',
-    
     #apps
     'apps.users',
-    "apps.drugs.apps.DrugsConfig",
-    "apps.batches.apps.BatchesConfig",
-  
 ]
 
 MIDDLEWARE = [
