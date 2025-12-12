@@ -15,7 +15,7 @@ class RoleRequiredMixin:
         
         if not has_role(request.user, self.required_role_class):
             raise PermissionDenied(
-                f"Доступ запрещен. Требуется роль: {self.required_role_class.__name__}"
+                f"Доступ запрещен для текущей роли."
             )
 
 class PermissionRequiredMixin:
