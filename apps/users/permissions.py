@@ -32,5 +32,5 @@ class PermissionRequiredMixin:
         
         if not has_permission(request.user, self.required_permission):
             raise PermissionDenied(
-                f"Доступ запрещен. Требуется право: {self.required_permission.__name__}"
+                f"Доступ запрещен. Отсутствуют требуемые права"
             )
