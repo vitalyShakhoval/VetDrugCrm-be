@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class Batch(models.Model):
     drug = models.ForeignKey(
         "drugs.Drug",
