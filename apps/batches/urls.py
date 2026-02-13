@@ -17,3 +17,4 @@ urlpatterns = [
     path("batch/list", batch_list, name="batch-list"),
     path("batch/item/<int:pk>", batch_detail, name="batch-item"),
 ]
+

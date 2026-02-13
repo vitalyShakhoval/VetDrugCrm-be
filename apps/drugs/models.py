@@ -1,6 +1,17 @@
 from django.db import models
 
 # Create your models here.
+class DrugGroup(models.Model):
+    name = models.CharField("Название группы", max_length=200, unique=True)
+
+    class Meta:
+        verbose_name = "Группа препаратов"
+        verbose_name_plural = "Группы препаратов"
+
+    def __str__(self):
+        return self.name
+
+
 class Drug(models.Model):
     name = models.CharField("Название", max_length=200)
     dosage_form = models.CharField("Форма выпуска", max_length=50)
@@ -10,6 +21,17 @@ class Drug(models.Model):
     def __str__(self):
         return f"{self.name} ({self.dosage_form})"
 
+    group = models.ForeignKey(
+        DrugGroup,
+        on_delete=models.PROTECT,
+        related_name="drugs",
+        null=True,
+        blank=True,
+    )
+
     class Meta:
         verbose_name = "Препарат"
         verbose_name_plural = "Справочник препаратов"
+
+    def __str__(self):
+        return f"{self.name} ({self.dosage_form})"
