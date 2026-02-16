@@ -1,4 +1,7 @@
-from rest_framework import viewsets, filters
+from django.db import transaction, IntegrityError
+from rest_framework import viewsets, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import (
     Batch,
     Section,
@@ -69,7 +72,7 @@ class InventorySessionViewSet(viewsets.ModelViewSet):
                 bs_qs = BatchSection.objects.filter(batch__warehouse_id=warehouse_id)
                 if section_ids:
                     bs_qs = bs_qs.filter(section_id__in=section_ids)
-                if drug_group_id:
+                if drug_group_id is not None:
                     bs_qs = bs_qs.filter(batch__drug__group_id=drug_group_id)
 
                 records = [
@@ -112,22 +115,21 @@ class InventorySessionViewSet(viewsets.ModelViewSet):
         POST /inventory/session/<pk>/complete
         """
         session = self.get_object()
+
         if session.status != "in_progress":
             return Response(
                 {"detail": "Инвентаризация не в статусе 'in_progress'."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if session.records.filter(actual_quantity__isnull=True).exists():
+            return Response(
+                {"detail": "Есть непосчитанные строки."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         session.mark_completed(save=True)
         return Response(InventorySessionSerializer(session).data)
-
-
-        # if session.records.filter(actual_quantity__isnull=True).exists():
-        #     return Response({"detail": "Есть непосчитанные строки."}, status=status.HTTP_400_BAD_REQUEST)
-
-        session.mark_completed(save=True)  # 
-        return Response(InventorySessionSerializer(session).data)
-
 
 class InventoryRecordViewSet(viewsets.ModelViewSet):
     queryset = InventoryRecord.objects.all().select_related("session", "batch", "section")
@@ -144,11 +146,17 @@ class InventoryRecordViewSet(viewsets.ModelViewSet):
         """
         rec = self.get_object()
         if rec.session.status != "in_progress":
-            return Response({"detail": "Нельзя менять записи: инвентаризация не активна."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Нельзя менять записи: инвентаризация не активна."},
+                status=status.HTTP_400_BAD_REQUEST)
 
         if set(request.data.keys()) - {"actual_quantity"}:
-            return Response({"detail": "Можно обновлять только поле actual_quantity."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"detail": "Можно обновлять только поле actual_quantity."},
+                status=status.HTTP_400_BAD_REQUEST)
 
+        if "actual_quantity" not in request.data:
+            return Response(
+                {"detail": "Нужно передать actual_quantity."},
+                status=status.HTTP_400_BAD_REQUEST)
         return super().partial_update(request, *args, **kwargs)
