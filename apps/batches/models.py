@@ -225,10 +225,6 @@ class InventorySessionSection(models.Model):
             if self.session.warehouse_id != self.section.warehouse_id:
                 raise ValidationError("Нельзя добавить секцию чужого склада в инвентаризацию.")
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
-
 
 class InventoryRecord(models.Model):
     session = models.ForeignKey(
@@ -284,11 +280,3 @@ class InventoryRecord(models.Model):
         if self.batch_id and self.section_id:
             if self.batch.warehouse_id != self.section.warehouse_id:
                 raise ValidationError("Секция должна принадлежать складу партии.")
-
-    def save(self, *args, **kwargs):
-        if self.actual_quantity is None:
-            self.difference = None
-        else:
-            self.difference = int(self.actual_quantity) - int(self.expected_quantity)
-        self.full_clean()
-        return super().save(*args, **kwargs)

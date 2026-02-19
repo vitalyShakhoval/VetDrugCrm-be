@@ -26,7 +26,6 @@ class InventoryRecordActualSerializer(serializers.ModelSerializer):
         model = InventoryRecord
         fields = ("actual_quantity",)
 
-
 class InventoryStartSerializer(serializers.Serializer):
     warehouse_id = serializers.IntegerField()
     section_ids = serializers.ListField(

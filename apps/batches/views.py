@@ -14,6 +14,7 @@ from .serializers import (
     BatchSerializer,
     InventorySessionSerializer,
     InventoryRecordSerializer,
+    InventoryRecordActualSerializer,
     InventoryStartSerializer,
 )
 
@@ -131,32 +132,26 @@ class InventorySessionViewSet(viewsets.ModelViewSet):
         session.mark_completed(save=True)
         return Response(InventorySessionSerializer(session).data)
 
-class InventoryRecordViewSet(viewsets.ModelViewSet):
+class InventoryRecordViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = InventoryRecord.objects.all().select_related("session", "batch", "section")
     serializer_class = InventoryRecordSerializer
+
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["batch__batch_number", "section__name", "session__warehouse__name"]
     ordering_fields = ["id", "difference"]
     ordering = ["id"]
 
-    def partial_update(self, request, *args, **kwargs):
-        """
-        PATCH /inventory/record/item/<pk>
-        body: {"actual_quantity": 12}
-        """
+    @action(detail=True, methods=["patch"], url_path="actual")
+    def set_actual(self, request, pk=None):
         rec = self.get_object()
+
         if rec.session.status != "in_progress":
             return Response(
                 {"detail": "Нельзя менять записи: инвентаризация не активна."},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        if set(request.data.keys()) - {"actual_quantity"}:
-            return Response(
-                {"detail": "Можно обновлять только поле actual_quantity."},
-                status=status.HTTP_400_BAD_REQUEST)
-
-        if "actual_quantity" not in request.data:
-            return Response(
-                {"detail": "Нужно передать actual_quantity."},
-                status=status.HTTP_400_BAD_REQUEST)
-        return super().partial_update(request, *args, **kwargs)
+        s = InventoryRecordActualSerializer(rec, data=request.data, partial=True)
+        s.is_valid(raise_exception=True)
+        s.save()
+        return Response(InventoryRecordSerializer(rec).data)
