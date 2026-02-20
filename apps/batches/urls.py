@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import BatchViewSet, export_batch_to_excel
+from .views import BatchViewSet, BatchImportView
 
 
 batch_list = BatchViewSet.as_view({
@@ -17,6 +17,6 @@ batch_detail = BatchViewSet.as_view({
 urlpatterns = [
     path("batch/list", batch_list, name="batch-list"),
     path("batch/item/<int:pk>", batch_detail, name="batch-item"),
-    path("batch/export", export_batch_to_excel, name="export-batch"),
+    path("batch/export", BatchImportView, name="export-batch"),
     
 ]

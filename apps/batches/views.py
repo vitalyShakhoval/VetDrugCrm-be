@@ -30,6 +30,7 @@ class BatchImportView(APIView):
 
         if not file:
             return Response({'error':'file required'}, status= status.HTTP_400_BAD_REQUEST)
+        
         try:
             if file.name.endswith('.csv'):
                 df = pd.read_csv(file)
@@ -37,6 +38,7 @@ class BatchImportView(APIView):
                 df = pd.read_excel(file)
             else:
                 return Response({'error': 'unsupported file format'}, status=status.HTTP_400_BAD_REQUEST)
+        
         except Exception as e:
             return Response(
                 {'error':f'file parse error: {e}'},
@@ -51,49 +53,74 @@ class BatchImportView(APIView):
             'supplier',
             'purchase_price',
         }
-
-        if not required_columns.issubset(df.columns):
+        missing_columns = required_columns-set(df.columns)
+        
+        if missing_columns:
             return Response(
-                {'error':f'Missing required columns: {required_columns}'},
+                {'error':f'Missing required columns: {missing_columns}'},
                 status= status.HTTP_400_BAD_REQUEST
                 )
         
-        parsed_item = []
-
-        
         #выборка нужных столбцов и их проверка на валидность            
+        drug_names = df["drug"].unique()
+        drug_map = {
+            drug.name: drug
+            for drug in Drug.objects.filter(name__in = drug_names)
+        }
+        valid_items = []
+        errors = []
+
         for index,row in df.iterrows():
-            
-            if not Drug.objects.filter(name=row['drug']).exists():
-                return Response(
-                {'error':f"Missing required drugs: {row['drug']}"},
-                status= status.HTTP_400_BAD_REQUEST
-            )
+            row_number = index + 1
 
-            item_data = {
-                'name': row['drug'],
-                'series':row['batch_number'],
-                'quantity':int(row['remaining_quantity']),
-                'expiry_date':pd.to_datetime(row['expiry_date']).date(),
-                'supplier':row['supplier'],
-                'purchase_price':row['purchase_price'],
-            }
-            #проверка есть ли название таблеток в списке
-            parsed_item.append(item_data)
-
-#сохранение
+            drug_name = row['drug']
+            drug_obj = drug_map.get(drug_name)
             
-        if not dry_run:
-            with transaction.atomic():
-                for item in parsed_item:
-                    batch = Batch.objects.create(
-                        drug=Drug.objects.filter(name=item['name']).exists(),
-                        series=item['remaning_quantity'],
-                        quantity=item['quantity'],
-                        expiration_date=item['expiry_date'],
-                        supplier=item['supplier'],
-                        price=row.item('purchase_price'),
-                    )
-            return Response(parsed_item)
+            if not drug_obj:
+                errors.append({
+                    "row": row_number,
+                    "error": f"Drug not found: {drug_name}"
+                })
+                continue
+            
+            try:
+                quantity = int(row['remaining_quantity'])
+                expiry_date = pd.to_datetime(row['expiry_date']).date()
+                purchase_price = float(row["purchase_prise"])
+            except Exception as e:
+                errors.append({
+                    "row": row_number,
+                    "error": str(e)
+                })
+                continue
+
+            valid_items.append({
+                'drug': drug_obj,
+                'series': row['batch_number'],
+                'quantity': quantity,
+                'expiry_date': expiry_date,
+                'supplier': row['supplier'],
+                'purchase_price':purchase_price,
+            })
         
+        #сохранение
+        if not dry_run and valid_items:
+            with transaction.atomic():
+                Batch.objects.bulk_create([
+                    Batch(
+                        drug = item['drug'],
+                        series = item['series'],
+                        quantity = item['quantity'],
+                        expiration_date = item['expiry_date'],
+                        supplier = item['supplier'],
+                        price = item['purchase_price'],
+                    )
+                    for item in valid_items
+                ])
+        return Response({
+            "dry_run": dry_run,
+            "valid_count": len(valid_items),
+            "error_count": len(errors),
+            "errors": errors,
+        })
                 
