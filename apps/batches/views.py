@@ -1,12 +1,13 @@
 import pandas as pd
+
 from rest_framework import viewsets, filters, status
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from django.http import HttpResponse
 from django.db import transaction
-from drugs.models import Drug
 
+from apps.drugs.models import Drug
 from .models import Batch
 from .serializers import BatchSerializer
 
@@ -24,7 +25,6 @@ class BatchImportView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     
     def post(self, request):
-
         file = request.FILES.get('file')
         dry_run = request.data.get('dry_run', 'true').lower() == 'true'
 
@@ -72,7 +72,6 @@ class BatchImportView(APIView):
 
         for index,row in df.iterrows():
             row_number = index + 1
-
             drug_name = row['drug']
             drug_obj = drug_map.get(drug_name)
             
@@ -86,7 +85,7 @@ class BatchImportView(APIView):
             try:
                 quantity = int(row['remaining_quantity'])
                 expiry_date = pd.to_datetime(row['expiry_date']).date()
-                purchase_price = float(row["purchase_prise"])
+                purchase_price = float(row["purchase_price"])
             except Exception as e:
                 errors.append({
                     "row": row_number,
@@ -104,23 +103,54 @@ class BatchImportView(APIView):
             })
         
         #сохранение
+        saved_items = []
         if not dry_run and valid_items:
             with transaction.atomic():
-                Batch.objects.bulk_create([
+               created_objects = Batch.objects.bulk_create([
                     Batch(
                         drug = item['drug'],
-                        series = item['series'],
+                        batch_number = item['series'],
                         quantity = item['quantity'],
-                        expiration_date = item['expiry_date'],
+                        expiry_date = item['expiry_date'],
                         supplier = item['supplier'],
-                        price = item['purchase_price'],
+                        purchase_price = item['purchase_price'],
+                        remaining_quantity = item['quantity']
                     )
                     for item in valid_items
                 ])
-        return Response({
-            "dry_run": dry_run,
-            "valid_count": len(valid_items),
-            "error_count": len(errors),
-            "errors": errors,
-        })
+               
+            for obj in created_objects:
+                saved_items.append({
+                    "id": obj.id,
+                    "drug": obj.drug.name,
+                    "series": obj.batch_number,
+                    "quantity": obj.quantity,
+                    "expiry_date": obj.expiry_date,
+                    "supplier": obj.supplier,
+                    "price": obj.purchase_price,
+                })
+            return Response({
+                "dry_run": dry_run,
+                "parsed_count": len(valid_items),
+                "saved_count": len(saved_items),
+                "saved_items": saved_items,
+                "errors": errors,
+            })
+        else:
+            preview_items = []
+            for item in valid_items:
+                preview_items.append({
+                    "drug": item["drug"].name,
+                    "series": item["series"],
+                    "quantity": item["quantity"],
+                    "expiry_date": item["expiry_date"],
+                    "supplier":item["supplier"],
+                    "price": item["purchase_price"],
+                })
+            return Response({
+                "dry_run": dry_run,
+                "parsed_count": len(preview_items),
+                "valid_items": preview_items,
+            })
                 
+                 

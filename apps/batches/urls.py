@@ -17,6 +17,6 @@ batch_detail = BatchViewSet.as_view({
 urlpatterns = [
     path("batch/list", batch_list, name="batch-list"),
     path("batch/item/<int:pk>", batch_detail, name="batch-item"),
-    path("batch/export", BatchImportView, name="export-batch"),
+    path("batch/export", BatchImportView.as_view(), name="export-batch"),
     
 ]
