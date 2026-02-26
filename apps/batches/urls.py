@@ -58,6 +58,5 @@ urlpatterns = [
     path("inventory/record/list", inventory_record_list, name="inventory-record-list"),
     path("inventory/record/item/<int:pk>", inventory_record_detail, name="inventory-record-item"),
     path("inventory/record/item/<int:pk>/actual", inventory_record_actual, name="inventory-record-actual"),
-
 ]
 

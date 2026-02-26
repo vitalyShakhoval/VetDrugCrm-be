@@ -67,10 +67,6 @@ class BatchSectionAdmin(admin.ModelAdmin):
 
 
 class InventorySessionSectionInline(admin.TabularInline):
-    """
-    Inline для редактирования sections у InventorySession.
-    Работает и с auto-through, и с кастомным through.
-    """
     model = InventorySession.sections.through
     extra = 0
     autocomplete_fields = ("section",)
@@ -81,10 +77,8 @@ class InventoryRecordInline(admin.TabularInline):
     extra = 0
     can_delete = False
 
-    # Разрешаем менять только фактическое количество.
     fields = ("batch", "section", "expected_quantity", "actual_quantity", "difference")
     readonly_fields = ("batch", "section", "expected_quantity", "difference")
-    autocomplete_fields = ("batch", "section")
 
 
 @admin.register(InventorySession)
@@ -96,7 +90,6 @@ class InventorySessionAdmin(admin.ModelAdmin):
     list_select_related = ("warehouse", "drug_group")
     autocomplete_fields = ("warehouse", "drug_group")
 
-    # ВАЖНО: не используем filter_horizontal для sections, чтобы не поймать admin.E013 при through
     inlines = [InventorySessionSectionInline, InventoryRecordInline]
 
     @admin.display(description="Строк", ordering=None)

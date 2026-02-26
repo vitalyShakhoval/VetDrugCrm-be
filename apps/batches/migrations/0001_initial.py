@@ -178,4 +178,5 @@ class Migration(migrations.Migration):
             model_name='batch',
             constraint=models.UniqueConstraint(fields=('drug', 'batch_number', 'warehouse'), name='uniq_batch_per_drug_wh'),
         ),
+
     ]

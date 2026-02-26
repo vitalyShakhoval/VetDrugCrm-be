@@ -69,7 +69,6 @@ class Batch(models.Model):
     expiry_date = models.DateField("Срок годности")
 
     received_quantity = models.PositiveIntegerField("Количество при поступлении")
-
     supplier = models.CharField("Поставщик", max_length=255, blank=True)
     purchase_price = models.DecimalField(
         "Закупочная цена",
@@ -133,8 +132,7 @@ class BatchSection(models.Model):
         return f"{self.batch} @ {self.section} = {self.quantity}"
 
     def clean(self):
-        if self.batch_id and self.section_id:
-            if self.batch.warehouse_id != self.section.warehouse_id:
+        if self.batch_id and self.section_id and self.batch.warehouse_id != self.section.warehouse_id:
                 raise ValidationError("Секция должна принадлежать складу партии.")
 
     def save(self, *args, **kwargs):

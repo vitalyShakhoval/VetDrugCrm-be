@@ -18,6 +18,7 @@ from .serializers import (
     InventoryStartSerializer,
 )
 
+
 class BatchViewSet(viewsets.ModelViewSet):
     queryset = Batch.objects.all()
     serializer_class = BatchSerializer
