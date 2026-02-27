@@ -30,7 +30,6 @@ class BatchImportView(APIView):
 
         if not file:
             return Response({'error':'file required'}, status= status.HTTP_400_BAD_REQUEST)
-        
         try:
             if file.name.endswith('.csv'):
                 df = pd.read_csv(file)
@@ -61,7 +60,7 @@ class BatchImportView(APIView):
                 status= status.HTTP_400_BAD_REQUEST
                 )
         
-        #выборка нужных столбцов и их проверка на валидность            
+        #выборка нужных столбцов и их проверка на валидность  
         drug_names = df["drug"].unique()
         drug_map = {
             drug.name: drug
@@ -69,7 +68,8 @@ class BatchImportView(APIView):
         }
         valid_items = []
         errors = []
-
+        key = []
+        set_key = set()
         for index,row in df.iterrows():
             row_number = index + 1
             drug_name = row['drug']
@@ -92,6 +92,12 @@ class BatchImportView(APIView):
                     "error": str(e)
                 })
                 continue
+            #Строки для уникальных записей
+            key = (drug_obj, row['batch_number'], expiry_date)
+
+            if key in set_key:
+                continue
+            set_key.add(key)
 
             valid_items.append({
                 'drug': drug_obj,
@@ -151,6 +157,6 @@ class BatchImportView(APIView):
                 "dry_run": dry_run,
                 "parsed_count": len(preview_items),
                 "valid_items": preview_items,
+                "errors": errors,
             })
-                
-                 
+        """дубли + dry_run + первью errors"""
