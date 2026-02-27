@@ -66,37 +66,72 @@ class BatchImportView(APIView):
             drug.name: drug
             for drug in Drug.objects.filter(name__in = drug_names)
         }
+        
         valid_items = []
         errors = []
         key = []
         set_key = set()
+        invalid_items = []
+
         for index,row in df.iterrows():
-            row_number = index + 1
-            drug_name = row['drug']
-            drug_obj = drug_map.get(drug_name)
+            try:
+                row_number = index + 1
+                drug_name = row['drug']
+                drug_obj = drug_map.get(drug_name)
             
+            #разбиваем по столбцам
+                quantity = int(row['remaining_quantity'])
+                expiry_date = pd.to_datetime(row['expiry_date']).date()
+                purchase_price = float(row["purchase_price"])
+                
+            except Exception as e:
+                invalid_items.append({
+                    'drug': drug_name,
+                    'series': row['batch_number'],
+                    'quantity': quantity,
+                    'expiry_date': expiry_date,
+                    'supplier': row['supplier'],
+                    'purchase_price':purchase_price,
+                })
+                errors.append({
+                    "row": row_number,
+                    "error": str(e)
+                })
+                continue
+
             if not drug_obj:
+                invalid_items.append({
+                    'drug': drug_name,
+                    'series': row['batch_number'],
+                    'quantity': quantity,
+                    'expiry_date': expiry_date,
+                    'supplier': row['supplier'],
+                    'purchase_price':purchase_price,
+                })
                 errors.append({
                     "row": row_number,
                     "error": f"Drug not found: {drug_name}"
                 })
                 continue
             
-            try:
-                quantity = int(row['remaining_quantity'])
-                expiry_date = pd.to_datetime(row['expiry_date']).date()
-                purchase_price = float(row["purchase_price"])
-            except Exception as e:
-                errors.append({
-                    "row": row_number,
-                    "error": str(e)
-                })
-                continue
             #Строки для уникальных записей
             key = (drug_obj, row['batch_number'], expiry_date)
 
             if key in set_key:
+                invalid_items.append({
+                    'drug': drug_name,
+                    'series': row['batch_number'],
+                    'quantity': quantity,
+                    'expiry_date': expiry_date,
+                    'supplier': row['supplier'],
+                    'purchase_price':purchase_price,
+                })
+                errors.append({
+                    "row": row_number,
+                    "error": f"The recording repeats: {drug_name}"
+                })
                 continue
+
             set_key.add(key)
 
             valid_items.append({
@@ -107,7 +142,7 @@ class BatchImportView(APIView):
                 'supplier': row['supplier'],
                 'purchase_price':purchase_price,
             })
-        
+
         #сохранение
         saved_items = []
         if not dry_run and valid_items:
@@ -135,11 +170,13 @@ class BatchImportView(APIView):
                     "supplier": obj.supplier,
                     "price": obj.purchase_price,
                 })
+
             return Response({
                 "dry_run": dry_run,
                 "parsed_count": len(valid_items),
                 "saved_count": len(saved_items),
                 "saved_items": saved_items,
+                "invalid_items": invalid_items,
                 "errors": errors,
             })
         else:
@@ -157,6 +194,6 @@ class BatchImportView(APIView):
                 "dry_run": dry_run,
                 "parsed_count": len(preview_items),
                 "valid_items": preview_items,
+                "invalid_items": invalid_items,
                 "errors": errors,
             })
-        """дубли + dry_run + первью errors"""
