@@ -6,5 +6,4 @@ urlpatterns = [
     path('auth/', include('apps.users.urls')),
     path("api/", include("apps.drugs.urls")),
     path("api/", include("apps.batches.urls")),
-
 ]
