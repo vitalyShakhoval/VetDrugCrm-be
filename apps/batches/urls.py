@@ -1,4 +1,6 @@
 from django.urls import path
+from .import_batch import BatchImportView
+
 from .views import (
     BatchViewSet,
     InventorySessionViewSet,
@@ -50,6 +52,7 @@ inventory_record_actual = InventoryRecordViewSet.as_view({"patch": "set_actual"}
 urlpatterns = [
     path("batch/list", batch_list, name="batch-list"),
     path("batch/item/<int:pk>", batch_detail, name="batch-item"),
+    path("batch/import", BatchImportView.as_view(), name="import-batch"),
     path("inventory/session/list", inventory_session_list, name="inventory-session-list"),
     path("inventory/session/item/<int:pk>", inventory_session_detail, name="inventory-session-item"),
     path("inventory/session/start", inventory_session_start, name="inventory-session-start"),

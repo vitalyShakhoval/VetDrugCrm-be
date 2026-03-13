@@ -49,7 +49,6 @@ class Section(models.Model):
             self.code = None
         return super().save(*args, **kwargs)
 
-
 class Batch(models.Model):
     drug = models.ForeignKey(
         "drugs.Drug",
